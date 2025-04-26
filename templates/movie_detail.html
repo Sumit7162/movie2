@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}{{ movie.title }}{% endblock %}
+
+{% block content %}
+<center>
+<section class="container">
+    <div class="banner">
+        <div class="banner-content">
+            <h1>Welcome to Movie World</h1>
+            <p>Explore your favorite movies and trailers!</p>
+        </div>
+    </div>
+    <div class="movie-detail">
+        <img src="{{ movie.poster }}" alt="{{ movie.title }}" class="movie-poster">
+        <div class="movie-detail-info">
+            <h2 class="movie-title">{{ movie.title }}</h2>
+            <p><strong>Plot:</strong> {{ movie.plot if movie.plot != "N/A" else "Plot not available" }}</p>
+            <p><strong>IMDb Rating:</strong> {{ movie.imdb_rating if movie.imdb_rating != "N/A" else "Rating not available" }}</p>
+            <p><strong>Genre:</strong> {{ movie.genre if movie.genre != "N/A" else "Genre not available" }}</p>
+            <p><strong>Runtime:</strong> {{ movie.runtime if movie.runtime != "N/A" else "Runtime not available" }}</p>
+            <p><strong>Released:</strong> {{ movie.released if movie.released != "N/A" else "Release date not available" }}</p>
+            {% if movie.trailer %}
+                <a href="{{ movie.trailer }}" target="_blank" class="btn-primary"><center>▶ Watch Trailer</center></a>
+            {% else %}
+                <p><strong>Trailer:</strong> Trailer not available</p>
+            {% endif %}
+            <!-- Download Movie Button -->
+            <a href="https://9xmovies.gdn/search/{{ movie.title | urlencode }}" target="_blank" class="btn-download"><center>⬇ Download Movie</center></a>
+        </div>
+    </div>
+</section>
+</center>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Recommendations for "{{ movie_name }}"{% endblock %}
+
+{% block content %}
+<section class="container">
+    
+    <h2>Recommendations for "{{ movie_name }}"</h2>
+    <div class="movie-grid">
+        {% for movie in recommendations %}
+            <div class="movie-card">
+                <a href="/movie/{{ movie.id }}">
+                    <img src="{{ movie.poster }}" alt="{{ movie.title }}">
+                </a>
+                <div class="movie-card-info">
+                    <h3>{{ movie.title }}</h3>
+                    {% if movie.trailer %}
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

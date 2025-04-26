@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Movie4u{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <!-- Image Background -->
+    <div class="image-background"></div>
+
+    <header>
+        <nav>
+            <a href="/" class="logo">Movie4u</a> <!-- Website name -->
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <p><center>&copy; Created by Sumit Sharma | Movie4u</center></p>
+    </footer>
+    <script src="/static/js/modal.js"></script>
+</body>
+</html>

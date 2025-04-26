@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Movie Recommendation System{% endblock %}
+
+{% block content %}
+<section class="hero">
+
+    <div class="hero-content">
+        <h1>Find Your Perfect Movie</h1>
+        <p>Discover the best movies tailored to your taste</p>
+        <form method="POST" action="/recommend" class="search-bar">
+            <input type="text" name="movie_name" placeholder="Enter movie name" required>
+            <button type="submit" id="search-button">Search <i class="fas fa-search"></i></button>
+        </form>
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+    </div>
+    
+</section>
+<section id="about" class="container">
+    <h2>About Us</h2>
+    <p>Welcome to your ultimate movie discovery companion! We specialize in providing personalized movie recommendations tailored to your unique tastes and viewing habits. Whether you're into action-packed thrillers, heartfelt dramas, quirky comedies, or hidden indie gems, our smart recommendation system helps you find exactly what you're in the mood for.</p>
+    <p>Powered by advanced algorithms and real-time data from top movie databases, we bring you curated suggestions you’ll love. Say goodbye to endless scrolling—discover, explore, and enjoy movies that truly match your vibe.</p>
+</section>
+
+<section id="contact" class="container">
+    <h2>Contact Us</h2>
+    <p>Email: support@movierec.com | Phone: +1-800-555-1234</p>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
+{% endblock %}
