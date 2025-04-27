@@ -20,14 +20,14 @@
             <p><strong>Genre:</strong> {{ movie.genre if movie.genre != "N/A" else "Genre not available" }}</p>
             <p><strong>Runtime:</strong> {{ movie.runtime if movie.runtime != "N/A" else "Runtime not available" }}</p>
             <p><strong>Released:</strong> {{ movie.released if movie.released != "N/A" else "Release date not available" }}</p>
-            {% if movie.trailer %}
-                <a href="{{ movie.trailer }}" target="_blank" class="btn-primary"><center>▶ Watch Trailer</center></a>
-            {% else %}
-                <p><strong>Trailer:</strong> Trailer not available</p>
-            {% endif %}
-            <!-- Download Movie Button -->
-            <a href="https://9xmovies.gdn/search/{{ movie.title | urlencode }}" target="_blank" class="btn-download"><center>⬇ Download Movie</center></a>
-        </div>
+            <div class="movie-buttons">
+                {% if movie.trailer %}
+                    <a href="{{ movie.trailer }}" target="_blank" class="btn-primary">▶ Watch Trailer</a>
+                {% else %}
+                    <p><strong>Trailer:</strong> Not available</p>
+                {% endif %}
+                <a href="https://mkvcinemas.onl/search/{{ movie.title | urlencode }}" target="_blank" class="btn-download">⬇ Download Movie</a>
+            </div>            
     </div>
 </section>
 </center>

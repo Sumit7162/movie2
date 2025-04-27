@@ -12,7 +12,7 @@ app.static_folder = "static"
 
 # TMDB API key (replace 'your_tmdb_api_key' with your actual API key)
 TMDB_API_KEY = "0904f8f04608b817974cd0e5cee2acc9"
-YOUTUBE_API_KEY = "AIzaSyDWNn029DKKhoAh330rpvbeQkRhpBLXack"  # Replace with your YouTube API key
+YOUTUBE_API_KEY = "AIzaSyAzJqWbj3rpyqdi4gTi48t7eIotImqABBw"  # Replace with your YouTube API key
 # OMDb API key
 OMDB_API_KEY = "84bb1e9d"
 
@@ -28,6 +28,7 @@ def fetch_youtube_trailer(movie_title):
         response = session.get(youtube_search_url, timeout=10)
         response.raise_for_status()
         youtube_data = response.json()
+        print(f"YouTube API Response for '{movie_title}': {youtube_data}")  # Debugging log
         if youtube_data.get("items"):
             # Extract the video ID of the first result
             video_id = youtube_data["items"][0]["id"]["videoId"]
@@ -81,10 +82,45 @@ def recommend():
     if not data['results']:
         return render_template('index.html', error="No movies found.")
 
-    # Get the first movie's ID
-    movie_id = data['results'][0]['id']
+    # Get the first movie's data
+    main_movie = data['results'][0]
+    movie_id = main_movie['id']
 
-    # Fetch recommendations (next part or related movies)
+    recommendations_data = []
+
+    # Fetch trailer for main movie
+    trailer_key = None
+    detail_url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={TMDB_API_KEY}&append_to_response=videos"
+    try:
+        detail_response = session.get(detail_url, timeout=10)
+        detail_response.raise_for_status()
+        movie_details = detail_response.json()
+        for video in movie_details.get('videos', {}).get('results', []):
+            if video['site'] == 'YouTube' and video['type'] == 'Trailer':
+                trailer_key = video['key']
+                break
+    except requests.exceptions.RequestException:
+        pass
+
+    trailer_url = f"https://www.youtube.com/watch?v={trailer_key}" if trailer_key else fetch_youtube_trailer(main_movie.get("title"))
+
+    # Fetch additional details from OMDb
+    omdb_details = fetch_omdb_details(main_movie.get("title"))
+
+    # Add main movie to the list
+    recommendations_data.append({
+        "id": main_movie.get("id"),
+        "title": main_movie.get("title"),
+        "poster": f"https://image.tmdb.org/t/p/w500{main_movie.get('poster_path')}" if main_movie.get("poster_path") else None,
+        "trailer": trailer_url,
+        "plot": omdb_details.get("plot") if omdb_details else "N/A",
+        "imdb_rating": omdb_details.get("imdb_rating") if omdb_details else "N/A",
+        "genre": omdb_details.get("genre") if omdb_details else "N/A",
+        "runtime": omdb_details.get("runtime") if omdb_details else "N/A",
+        "released": omdb_details.get("released") if omdb_details else "N/A"
+    })
+
+    # Now fetch recommendations (related movies)
     recommendations_url = f"https://api.themoviedb.org/3/movie/{movie_id}/recommendations?api_key={TMDB_API_KEY}&append_to_response=videos"
     try:
         recommendations_response = session.get(recommendations_url, timeout=10)
@@ -97,9 +133,9 @@ def recommend():
         return render_template('index.html', error=f"An error occurred: {e}")
 
     recommendations = recommendations_response.json().get('results', [])
-    recommendations_data = []
+
+    # Add recommended movies
     for movie in recommendations:
-        # Fetch trailer for each movie
         trailer_key = None
         if movie.get("id"):
             detail_url = f"https://api.themoviedb.org/3/movie/{movie['id']}?api_key={TMDB_API_KEY}&append_to_response=videos"
@@ -114,10 +150,8 @@ def recommend():
             except requests.exceptions.RequestException:
                 pass
 
-        # If no trailer is found on TMDb, search YouTube
         trailer_url = f"https://www.youtube.com/watch?v={trailer_key}" if trailer_key else fetch_youtube_trailer(movie.get("title"))
 
-        # Fetch additional details from OMDb
         omdb_details = fetch_omdb_details(movie.get("title"))
 
         recommendations_data.append({
@@ -125,7 +159,7 @@ def recommend():
             "title": movie.get("title"),
             "poster": f"https://image.tmdb.org/t/p/w500{movie.get('poster_path')}" if movie.get("poster_path") else None,
             "trailer": trailer_url,
-            "plot": omdb_details.get("movie.plot") if omdb_details else "N/A",
+            "plot": omdb_details.get("plot") if omdb_details else "N/A",
             "imdb_rating": omdb_details.get("imdb_rating") if omdb_details else "N/A",
             "genre": omdb_details.get("genre") if omdb_details else "N/A",
             "runtime": omdb_details.get("runtime") if omdb_details else "N/A",
@@ -134,10 +168,11 @@ def recommend():
 
     return render_template('recommendations.html', movie_name=movie_name, recommendations=recommendations_data)
 
+
 @app.route('/movie/<int:movie_id>')
 def movie_detail(movie_id):
     # TMDb API call to fetch movie details
-    detail_url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={TMDB_API_KEY}"
+    detail_url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={TMDB_API_KEY}&append_to_response=videos"
     try:
         response = session.get(detail_url, timeout=10)
         response.raise_for_status()
@@ -145,8 +180,15 @@ def movie_detail(movie_id):
     except requests.exceptions.RequestException as e:
         return render_template('error.html', message=f"Failed to fetch movie details: {e}")
 
-    # Fetch trailer using YouTube API
-    trailer_url = fetch_youtube_trailer(movie.get("title"))
+    # Fetch trailer from TMDb API
+    trailer_key = None
+    for video in movie.get('videos', {}).get('results', []):
+        if video['site'] == 'YouTube' and video['type'] == 'Trailer':
+            trailer_key = video['key']
+            break
+
+    # If no trailer is found on TMDb, fallback to YouTube API
+    trailer_url = f"https://www.youtube.com/watch?v={trailer_key}" if trailer_key else fetch_youtube_trailer(movie.get("title"))
 
     # Combine data to pass to the template
     movie_data = {
